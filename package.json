@@ -1,0 +1,19 @@
+{
+  "name": "oss-stats",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Nuno Campos (nunocampos@yld.io)",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "github-graphql-api": "^1.0.6",
+    "lodash": "^4.17.10"
+  },
+  "devDependencies": {
+    "prettier": "^1.14.2"
+  }
+}
