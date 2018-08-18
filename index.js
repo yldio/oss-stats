@@ -1,7 +1,9 @@
 const { GitHub } = require("github-graphql-api");
 const {
+  map,
   get,
   set,
+  size,
   flatMap,
   uniq,
   chunk,
@@ -48,6 +50,9 @@ const orgMembersQuery = `
       members(first: 100, after: $after) {
         nodes {
           id
+          url
+          name
+          login
         }
         pageInfo {
           endCursor
@@ -64,17 +69,18 @@ const userPullRequestsQuery = `
       ... on User {
         pullRequests(first: 100, after: $after) {
           nodes {
+            id
+            url
             createdAt
             author {
               ... on User {
                 id
-                url
-                name
                 login
               }
             }
             repository {
               id
+              nameWithOwner
             }
           }
           pageInfo {
@@ -119,8 +125,8 @@ async function getData(org) {
 
   const pullRequests = flatMap(
     await Promise.all(
-      members.map(member =>
-        paginateConnection(userPullRequestsQuery, member, "node.pullRequests")
+      members.map(({ id }) =>
+        paginateConnection(userPullRequestsQuery, { id }, "node.pullRequests")
       )
     ),
     "node.pullRequests.nodes"
@@ -138,66 +144,194 @@ async function getData(org) {
   return { members, pullRequests, repos };
 }
 
-function sortRepos(repos) {
-  const reposWithPullRequestsRank = orderBy(
-    repos,
-    "pullRequestsCount",
-    "desc"
-  ).map((r, i) => ({ ...r, pullRequestsRank: i }));
-  const reposWithBothRanks = orderBy(
-    reposWithPullRequestsRank,
-    "stargazers.totalCount",
-    "desc"
-  ).map((r, i) => ({ ...r, starsRank: i }));
-
-  return orderBy(
-    reposWithBothRanks.map(r => ({
-      ...r,
-      rank: r.pullRequestsRank + r.starsRank
-    })),
-    "rank",
-    "asc"
-  );
+function summariseContributions(data) {
+  return {
+    repos: orderBy(data.repositories, "rank"),
+    repoCount: size(data.repositories),
+    pullRequestCount: size(data.pullRequests),
+    pullRequestsByYear: countBy(data.pullRequests, "year"),
+    pullRequestsByMonth: countBy(data.pullRequests, "month")
+  };
 }
 
-function summariseContributions(data) {
-  const reposById = keyBy(data.repos, "id");
+function addRepositoryRanks(repos) {
+  // this function mutates each object inside repos
 
-  const pullRequests = orderBy(
+  orderBy(repos, "pullRequestCount", "desc").forEach((r, i) => {
+    r.pullRequestsRank = i;
+  });
+
+  orderBy(repos, "starCount", "desc").forEach((r, i) => {
+    r.starsRank = i;
+  });
+
+  repos.forEach(r => {
+    r.rank = r.pullRequestsRank + r.starsRank;
+  });
+
+  return repos;
+}
+
+function groupRepositoriesByTopic(repos) {
+  const reposByTopic = {};
+
+  for (repo of Object.values(repos)) {
+    for (topic of repo.topics) {
+      const group = reposByTopic[topic] || [];
+      group.push(repo);
+      reposByTopic[topic] = group;
+    }
+  }
+
+  return reposByTopic;
+}
+
+function normalise(data) {
+  /*
+  {
+    repositories: Map<{
+      url,
+      nameWithOwner,
+      descriptionHTML,
+
+      starCount,
+      pullRequestCount,
+      starsRank,
+      pullRequestsRank,
+      rank,
+
+      topics: id[], // sorted in original github order
+      pullRequests: id[], // sorted by createdAt
+      contributors: id[], // sorted by number of pullRequests
+    }>,
+
+    pullRequests: Map<{
+      id,
+      url,
+      createdAt,
+      year,
+      month,
+
+      author: id,
+      repository: id
+    }>,
+
+    members: Map<{
+      url,
+      name,
+      login,
+
+      pullRequests: id[], // sorted by createdAt
+      repositoriesContributedTo: id[], // sorted by number of pullRequests
+    }>,
+
+    topics: Map<{
+      url,
+      name,
+
+      repositories: id[], // sorted by popularity-significance rank
+      contributors: id[] // sorted by something rank ??
+    }>
+  }
+  */
+  const pullRequestKey = "id";
+  const repoKey = "nameWithOwner";
+  const memberKey = "login";
+  const topicKey = "topic.name";
+
+  const normalised = {};
+
+  normalised.pullRequests = keyBy(
     data.pullRequests.map(pr => ({
-      ...pr,
+      id: pr.id,
+      url: pr.url,
+      createdAt: pr.createdAt,
       year: pr.createdAt.slice(0, 4),
       month: pr.createdAt.slice(0, 7),
-      repository: reposById[pr.repository.id]
+
+      author: pr.author[memberKey],
+      repository: pr.repository[repoKey]
     })),
-    "createdAt",
-    "desc"
+    pullRequestKey
   );
 
-  const prsByRepo = groupBy(pullRequests, "repository.id");
+  const pullRequestsByRepo = groupBy(normalised.pullRequests, "repository");
+  const pullRequestsByAuthor = groupBy(normalised.pullRequests, "author");
 
-  const repos = sortRepos(
-    data.repos.map(r => {
-      const pullRequests = prsByRepo[r.id];
-      const pullRequestsCount = pullRequests.length;
+  normalised.repositories = keyBy(
+    addRepositoryRanks(
+      data.repos.map(repo => {
+        const pullRequests = orderBy(
+          pullRequestsByRepo[repo[repoKey]],
+          "createdAt"
+        );
+        const authorCounts = countBy(pullRequests, "author");
+
+        return {
+          url: repo.url,
+          nameWithOwner: repo.nameWithOwner,
+          descriptionHTML: repo.descriptionHTML,
+
+          starCount: repo.stargazers.totalCount,
+          pullRequestCount: pullRequests.length,
+
+          topics: map(repo.repositoryTopics.nodes, topicKey),
+          pullRequests: map(pullRequests, pullRequestKey),
+          contributors: orderBy(
+            Object.keys(authorCounts),
+            k => authorCounts[k],
+            "desc"
+          )
+        };
+      })
+    ),
+    repoKey
+  );
+
+  normalised.members = keyBy(
+    data.members.map(m => {
+      const pullRequests = orderBy(
+        pullRequestsByAuthor[m[memberKey]],
+        "createdAt"
+      );
+
+      const repoCounts = countBy(pullRequests, "repository");
+
       return {
-        ...r,
-        repositoryTopics: r.repositoryTopics.nodes,
-        pullRequests,
-        pullRequestsCount
+        url: m.url,
+        name: m.name,
+        login: m.login,
+
+        pullRequests: map(pullRequests, pullRequestKey),
+        repositoriesContributedTo: orderBy(
+          Object.keys(repoCounts),
+          k => repoCounts[k],
+          "desc"
+        )
       };
-    })
+    }),
+    memberKey
   );
 
-  const summary = {
-    repos,
-    reposCount: repos.length,
-    pullRequestsCount: pullRequests.length,
-    pullRequestsByYear: countBy(pullRequests, "year"),
-    pullRequestsByMonth: countBy(pullRequests, "month")
-  };
+  const repositoriesByTopic = groupRepositoriesByTopic(normalised.repositories);
 
-  return summary;
+  normalised.topics = keyBy(
+    uniq(flatMap(data.repos, "repositoryTopics.nodes")).map(t => {
+      const repositories = orderBy(repositoriesByTopic[t.topic.name], "name");
+      const contributors = uniq(flatMap(repositories, "contributors"));
+
+      return {
+        url: t.url,
+        name: t.topic.name,
+
+        repositories: map(repositories, repoKey),
+        contributors
+      };
+    }),
+    "name"
+  );
+
+  return normalised;
 }
 
-module.exports = { getData, summariseContributions };
+module.exports = { getData, normalise, summariseContributions };

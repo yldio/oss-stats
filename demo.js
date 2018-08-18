@@ -1,12 +1,15 @@
 const express = require("express");
 const http = require("http");
 
-const { getData, summariseContributions } = require("./");
+const { getData, normalise, summariseContributions } = require("./");
 
 const app = express();
 
 const org = "yldio";
-const dataP = getData(org).then(summariseContributions, console.log);
+const summaryPromise = getData(org)
+  .then(normalise)
+  .then(summariseContributions)
+  .catch(console.log);
 
 app.get("/", async (req, res) => {
   res.status(200);
@@ -41,6 +44,7 @@ app.get("/", async (req, res) => {
             padding: 20px;
             font-size: 20px;
             margin: 5px;
+            overflow: hidden;
           }
           .repo > div {
             margin-bottom: 10px;
@@ -48,18 +52,29 @@ app.get("/", async (req, res) => {
           .repo-name {
             font-weight: 500;
           }
+          .topics {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+          }
+          .topic {
+            padding: 5px;
+            border: 1px solid rgba(0,0,0,0.5);
+            margin-right: 5px;
+            margin-bottom: 5px;
+          }
         </style>
       </head>
       <body>
   `);
 
-  const data = await dataP;
+  const summary = await summaryPromise;
 
   res.write(
     `<div class="big"><b>${org}</b> has made<br /><b>${
-      data.pullRequestsCount
+      summary.pullRequestCount
     }</b> contributions<br /> to <b>${
-      data.reposCount
+      summary.repoCount
     }</b> open source projects.</div>`
   );
 
@@ -67,12 +82,16 @@ app.get("/", async (req, res) => {
 
   res.write(`
 <div class="repo-container">
-  ${data.repos
+  ${summary.repos
     .map(
       repo => `<div class="repo">
   <div class="repo-name">${repo.nameWithOwner}</div>
-  <div>${repo.stargazers.totalCount} stars</div>
-  <div>${repo.pullRequestsCount} contributions</div>
+  <div>${repo.starCount} stars</div>
+  <div>${repo.pullRequestCount} contributions</div>
+  <div class="topics">${repo.topics
+    .map(t => `<div class="topic">${t}</div>`)
+    .slice(0, 5)
+    .join("")}</div>
 </div>`
     )
     .join("")}
