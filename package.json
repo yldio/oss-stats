@@ -7,7 +7,7 @@
     "start": "node demo.js"
   },
   "keywords": [],
-  "author": "@yldio",
+  "author": "YLD Open Source (opensource-maintainers@yld.io)",
   "license": "Apache-2.0",
   "dependencies": {
     "github-graphql-api": "^1.0.6",
