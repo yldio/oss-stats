@@ -4,7 +4,8 @@
   "description": "## Open Source Contributions of your GitHub org",
   "main": "index.js",
   "scripts": {
-    "start": "node demo.js"
+    "start": "node demo.js",
+    "format": "prettier --write \"*.js\""
   },
   "keywords": [],
   "author": "YLD Open Source (opensource-maintainers@yld.io)",
@@ -26,3 +27,4 @@
   },
   "homepage": "https://github.com/yldio/oss-stats#readme"
 }
+
