@@ -6,7 +6,7 @@ const { getData, normalise, summariseContributions } = require("./");
 const app = express();
 
 const org = "yldio";
-const summaryPromise = getData(org)
+const summaryPromise = getData(org, process.env.GITHUB_TOKEN)
   .then(normalise)
   .then(summariseContributions)
   .catch(console.log);

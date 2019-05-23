@@ -7,7 +7,7 @@
     "start": "node demo.js"
   },
   "keywords": [],
-  "author": "Nuno Campos (nunocampos@yld.io)",
+  "author": "@yldio",
   "license": "Apache-2.0",
   "dependencies": {
     "github-graphql-api": "^1.0.6",
