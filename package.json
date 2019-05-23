@@ -1,13 +1,14 @@
 {
-  "name": "oss-stats",
+  "name": "@yldio/oss-stats",
   "version": "1.0.0",
-  "description": "",
+  "description": "## Open Source Contributions of your GitHub org",
   "main": "index.js",
   "scripts": {
-    "start": "node demo.js"
+    "start": "node demo.js",
+    "format": "prettier --write \"*.js\""
   },
   "keywords": [],
-  "author": "Nuno Campos (nunocampos@yld.io)",
+  "author": "YLD Open Source (opensource-maintainers@yld.io)",
   "license": "Apache-2.0",
   "dependencies": {
     "github-graphql-api": "^1.0.6",
@@ -16,5 +17,14 @@
   "devDependencies": {
     "express": "^4.16.3",
     "prettier": "^1.14.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yldio/oss-stats.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yldio/oss-stats/issues"
+  },
+  "homepage": "https://github.com/yldio/oss-stats#readme"
 }
+

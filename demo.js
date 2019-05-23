@@ -1,18 +1,18 @@
-const express = require("express");
-const http = require("http");
+const express = require('express')
+const http = require('http')
 
-const { getData, normalise, summariseContributions } = require("./");
+const { getData, normalise, summariseContributions } = require('./')
 
-const app = express();
+const app = express()
 
-const org = "yldio";
-const summaryPromise = getData(org)
+const org = 'yldio'
+const summaryPromise = getData({ org, token: process.env.GITHUB_TOKEN })
   .then(normalise)
   .then(summariseContributions)
-  .catch(console.log);
+  .catch(console.log)
 
-app.get("/", async (req, res) => {
-  res.status(200);
+app.get('/', async (req, res) => {
+  res.status(200)
   res.write(`
     <!DOCTYPE html>
     <html lang="en" dir="ltr">
@@ -66,9 +66,9 @@ app.get("/", async (req, res) => {
         </style>
       </head>
       <body>
-  `);
+  `)
 
-  const summary = await summaryPromise;
+  const summary = await summaryPromise
 
   res.write(
     `<div class="big"><b>${org}</b> has made<br /><b>${
@@ -76,9 +76,9 @@ app.get("/", async (req, res) => {
     }</b> contributions<br /> to <b>${
       summary.repoCount
     }</b> open source projects.</div>`
-  );
+  )
 
-  res.write(`<div class="big">Top projects:</div>`);
+  res.write(`<div class="big">Top projects:</div>`)
 
   res.write(`
 <div class="repo-container">
@@ -91,19 +91,19 @@ app.get("/", async (req, res) => {
   <div class="topics">${repo.topics
     .map(t => `<div class="topic">${t}</div>`)
     .slice(0, 5)
-    .join("")}</div>
+    .join('')}</div>
 </div>`
     )
-    .join("")}
+    .join('')}
 </div>
-`);
+`)
 
-  res.write(`</body></html>`);
-  res.end();
-});
+  res.write(`</body></html>`)
+  res.end()
+})
 
-const server = http.createServer(app);
-const port = process.env.PORT || 3000;
+const server = http.createServer(app)
+const port = process.env.PORT || 3000
 server.listen(port, function() {
-  console.log("Express server running on *:" + port);
-});
+  console.log('Express server running on *:' + port)
+})

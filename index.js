@@ -1,4 +1,4 @@
-const { GitHub } = require("github-graphql-api");
+const { GitHub } = require('github-graphql-api')
 const {
   map,
   get,
@@ -11,17 +11,16 @@ const {
   orderBy,
   groupBy,
   countBy
-} = require("lodash");
-
-const client = new GitHub({ token: process.env.GITHUB_TOKEN });
+} = require('lodash')
 
 async function paginateConnection(
+  client,
   query,
   variables,
   pathToConnection,
   previousPage
 ) {
-  const pathToNodes = pathToConnection + ".nodes";
+  const pathToNodes = pathToConnection + '.nodes'
   const currentPage = await client.query(
     query,
     previousPage
@@ -30,17 +29,17 @@ async function paginateConnection(
           after: get(previousPage, pathToConnection).pageInfo.endCursor
         }
       : variables
-  );
+  )
   if (previousPage) {
     set(currentPage, pathToNodes, [
       ...get(previousPage, pathToNodes),
       ...get(currentPage, pathToNodes)
-    ]);
+    ])
   }
   if (get(currentPage, pathToConnection).pageInfo.hasNextPage) {
-    return paginateConnection(query, variables, pathToConnection, currentPage);
+    return paginateConnection(query, variables, pathToConnection, currentPage)
   } else {
-    return currentPage;
+    return currentPage
   }
 }
 
@@ -61,7 +60,7 @@ const orgMembersQuery = `
       }
     }
   }
-`;
+`
 
 const userPullRequestsQuery = `
   query($id: ID!, $after: String) {
@@ -91,7 +90,7 @@ const userPullRequestsQuery = `
       }
     }
   }
-`;
+`
 
 const repoDetailsQuery = `
   query($ids: [ID!]!) {
@@ -115,26 +114,41 @@ const repoDetailsQuery = `
       }
     }
   }
-`;
+`
 
-async function getData(org) {
+async function getData({ org, token }) {
+  if (!org) {
+    throw new Error(`Organization param missing, org: ${org}`)
+  }
+  if (!token) {
+    throw new Error('Missing PAT token')
+  }
+
+  const client = new GitHub({ token })
+
   const members = get(
     await paginateConnection(
+      client,
       orgMembersQuery,
       { org },
       'organization.membersWithRole'
     ),
     'organization.membersWithRole.nodes'
-  );;
+  )
 
   const pullRequests = flatMap(
     await Promise.all(
       members.map(({ id }) =>
-        paginateConnection(userPullRequestsQuery, { id }, "node.pullRequests")
+        paginateConnection(
+          client,
+          userPullRequestsQuery,
+          { id },
+          'node.pullRequests'
+        )
       )
     ),
-    "node.pullRequests.nodes"
-  );
+    'node.pullRequests.nodes'
+  )
 
   const repos = flatMap(
     await Promise.all(
@@ -142,52 +156,52 @@ async function getData(org) {
         client.query(repoDetailsQuery, { ids })
       )
     ),
-    "nodes"
-  );
+    'nodes'
+  )
 
-  return { members, pullRequests, repos };
+  return { members, pullRequests, repos }
 }
 
 function summariseContributions(data) {
   return {
-    repos: orderBy(data.repositories, "rank"),
+    repos: orderBy(data.repositories, 'rank'),
     repoCount: size(data.repositories),
     pullRequestCount: size(data.pullRequests),
-    pullRequestsByYear: countBy(data.pullRequests, "year"),
-    pullRequestsByMonth: countBy(data.pullRequests, "month")
-  };
+    pullRequestsByYear: countBy(data.pullRequests, 'year'),
+    pullRequestsByMonth: countBy(data.pullRequests, 'month')
+  }
 }
 
 function addRepositoryRanks(repos) {
   // this function mutates each object inside repos
 
-  orderBy(repos, "pullRequestCount", "desc").forEach((r, i) => {
-    r.pullRequestsRank = i;
-  });
+  orderBy(repos, 'pullRequestCount', 'desc').forEach((r, i) => {
+    r.pullRequestsRank = i
+  })
 
-  orderBy(repos, "starCount", "desc").forEach((r, i) => {
-    r.starsRank = i;
-  });
+  orderBy(repos, 'starCount', 'desc').forEach((r, i) => {
+    r.starsRank = i
+  })
 
   repos.forEach(r => {
-    r.rank = r.pullRequestsRank + r.starsRank;
-  });
+    r.rank = r.pullRequestsRank + r.starsRank
+  })
 
-  return repos;
+  return repos
 }
 
 function groupRepositoriesByTopic(repos) {
-  const reposByTopic = {};
+  const reposByTopic = {}
 
   for (repo of Object.values(repos)) {
     for (topic of repo.topics) {
-      const group = reposByTopic[topic] || [];
-      group.push(repo);
-      reposByTopic[topic] = group;
+      const group = reposByTopic[topic] || []
+      group.push(repo)
+      reposByTopic[topic] = group
     }
   }
 
-  return reposByTopic;
+  return reposByTopic
 }
 
 function normalise(data) {
@@ -238,12 +252,12 @@ function normalise(data) {
     }>
   }
   */
-  const pullRequestKey = "id";
-  const repoKey = "nameWithOwner";
-  const memberKey = "login";
-  const topicKey = "topic.name";
+  const pullRequestKey = 'id'
+  const repoKey = 'nameWithOwner'
+  const memberKey = 'login'
+  const topicKey = 'topic.name'
 
-  const normalised = {};
+  const normalised = {}
 
   normalised.pullRequests = keyBy(
     data.pullRequests.map(pr => ({
@@ -257,19 +271,19 @@ function normalise(data) {
       repository: pr.repository[repoKey]
     })),
     pullRequestKey
-  );
+  )
 
-  const pullRequestsByRepo = groupBy(normalised.pullRequests, "repository");
-  const pullRequestsByAuthor = groupBy(normalised.pullRequests, "author");
+  const pullRequestsByRepo = groupBy(normalised.pullRequests, 'repository')
+  const pullRequestsByAuthor = groupBy(normalised.pullRequests, 'author')
 
   normalised.repositories = keyBy(
     addRepositoryRanks(
       data.repos.map(repo => {
         const pullRequests = orderBy(
           pullRequestsByRepo[repo[repoKey]],
-          "createdAt"
-        );
-        const authorCounts = countBy(pullRequests, "author");
+          'createdAt'
+        )
+        const authorCounts = countBy(pullRequests, 'author')
 
         return {
           url: repo.url,
@@ -284,22 +298,22 @@ function normalise(data) {
           contributors: orderBy(
             Object.keys(authorCounts),
             k => authorCounts[k],
-            "desc"
+            'desc'
           )
-        };
+        }
       })
     ),
     repoKey
-  );
+  )
 
   normalised.members = keyBy(
     data.members.map(m => {
       const pullRequests = orderBy(
         pullRequestsByAuthor[m[memberKey]],
-        "createdAt"
-      );
+        'createdAt'
+      )
 
-      const repoCounts = countBy(pullRequests, "repository");
+      const repoCounts = countBy(pullRequests, 'repository')
 
       return {
         url: m.url,
@@ -310,19 +324,19 @@ function normalise(data) {
         repositoriesContributedTo: orderBy(
           Object.keys(repoCounts),
           k => repoCounts[k],
-          "desc"
+          'desc'
         )
-      };
+      }
     }),
     memberKey
-  );
+  )
 
-  const repositoriesByTopic = groupRepositoriesByTopic(normalised.repositories);
+  const repositoriesByTopic = groupRepositoriesByTopic(normalised.repositories)
 
   normalised.topics = keyBy(
-    uniq(flatMap(data.repos, "repositoryTopics.nodes")).map(t => {
-      const repositories = orderBy(repositoriesByTopic[t.topic.name], "name");
-      const contributors = uniq(flatMap(repositories, "contributors"));
+    uniq(flatMap(data.repos, 'repositoryTopics.nodes')).map(t => {
+      const repositories = orderBy(repositoriesByTopic[t.topic.name], 'name')
+      const contributors = uniq(flatMap(repositories, 'contributors'))
 
       return {
         url: t.url,
@@ -330,12 +344,12 @@ function normalise(data) {
 
         repositories: map(repositories, repoKey),
         contributors
-      };
+      }
     }),
-    "name"
-  );
+    'name'
+  )
 
-  return normalised;
+  return normalised
 }
 
-module.exports = { getData, normalise, summariseContributions };
+module.exports = { getData, normalise, summariseContributions }
