@@ -13,9 +13,8 @@ const {
   countBy
 } = require("lodash");
 
-const client = new GitHub({ token: process.env.GITHUB_TOKEN });
-
 async function paginateConnection(
+  client,
   query,
   variables,
   pathToConnection,
@@ -117,9 +116,16 @@ const repoDetailsQuery = `
   }
 `;
 
-async function getData(org) {
+async function getData(org, token) {
+
+  if(!org) { throw new Error(`'Organization param missing, org: ${org}`) }
+  if(!token) { throw new Error('Missing PAT token') }
+
+  const client = new GitHub({ token });
+
   const members = get(
     await paginateConnection(
+      client,
       orgMembersQuery,
       { org },
       'organization.membersWithRole'
@@ -130,7 +136,7 @@ async function getData(org) {
   const pullRequests = flatMap(
     await Promise.all(
       members.map(({ id }) =>
-        paginateConnection(userPullRequestsQuery, { id }, "node.pullRequests")
+        paginateConnection(client, userPullRequestsQuery, { id }, "node.pullRequests")
       )
     ),
     "node.pullRequests.nodes"
