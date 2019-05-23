@@ -118,7 +118,7 @@ const repoDetailsQuery = `
 
 async function getData({ org, token }) {
   if (!org) {
-    throw new Error(`'Organization param missing, org: ${org}`)
+    throw new Error(`Organization param missing, org: ${org}`)
   }
   if (!token) {
     throw new Error('Missing PAT token')
