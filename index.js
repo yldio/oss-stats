@@ -47,7 +47,7 @@ async function paginateConnection(
 const orgMembersQuery = `
   query($org: String!, $after: String) {
     organization(login: $org) {
-      members(first: 100, after: $after) {
+      membersWithRole(first: 100, after: $after) {
         nodes {
           id
           url
@@ -119,9 +119,13 @@ const repoDetailsQuery = `
 
 async function getData(org) {
   const members = get(
-    await paginateConnection(orgMembersQuery, { org }, "organization.members"),
-    "organization.members.nodes"
-  );
+    await paginateConnection(
+      orgMembersQuery,
+      { org },
+      'organization.membersWithRole'
+    ),
+    'organization.membersWithRole.nodes'
+  );;
 
   const pullRequests = flatMap(
     await Promise.all(
