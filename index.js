@@ -37,7 +37,13 @@ async function paginateConnection(
     ])
   }
   if (get(currentPage, pathToConnection).pageInfo.hasNextPage) {
-    return paginateConnection(query, variables, pathToConnection, currentPage)
+    return paginateConnection(
+      client,
+      query,
+      variables,
+      pathToConnection,
+      currentPage
+    )
   } else {
     return currentPage
   }
