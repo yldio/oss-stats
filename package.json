@@ -12,11 +12,11 @@
   "license": "Apache-2.0",
   "dependencies": {
     "github-graphql-api": "^1.0.6",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "express": "^4.16.3",
-    "prettier": "^1.14.2"
+    "express": "^4.17.1",
+    "prettier": "^2.0.0"
   },
   "repository": {
     "type": "git",
@@ -27,4 +27,3 @@
   },
   "homepage": "https://github.com/yldio/oss-stats#readme"
 }
-

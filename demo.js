@@ -1,18 +1,18 @@
-const express = require('express')
-const http = require('http')
+const express = require('express');
+const http = require('http');
 
-const { getData, normalise, summariseContributions } = require('./')
+const { getData, normalise, summariseContributions } = require('./');
 
-const app = express()
+const app = express();
 
-const org = 'yldio'
+const org = 'yldio';
 const summaryPromise = getData({ org, token: process.env.GITHUB_TOKEN })
   .then(normalise)
   .then(summariseContributions)
-  .catch(console.log)
+  .catch(console.log);
 
 app.get('/', async (req, res) => {
-  res.status(200)
+  res.status(200);
   res.write(`
     <!DOCTYPE html>
     <html lang="en" dir="ltr">
@@ -66,44 +66,40 @@ app.get('/', async (req, res) => {
         </style>
       </head>
       <body>
-  `)
+  `);
 
-  const summary = await summaryPromise
+  const summary = await summaryPromise;
 
   res.write(
-    `<div class="big"><b>${org}</b> has made<br /><b>${
-      summary.pullRequestCount
-    }</b> contributions<br /> to <b>${
-      summary.repoCount
-    }</b> open source projects.</div>`
-  )
+    `<div class="big"><b>${org}</b> has made<br /><b>${summary.pullRequestCount}</b> contributions<br /> to <b>${summary.repoCount}</b> open source projects.</div>`,
+  );
 
-  res.write(`<div class="big">Top projects:</div>`)
+  res.write(`<div class="big">Top projects:</div>`);
 
   res.write(`
 <div class="repo-container">
   ${summary.repos
     .map(
-      repo => `<div class="repo">
+      (repo) => `<div class="repo">
   <div class="repo-name">${repo.nameWithOwner}</div>
   <div>${repo.starCount} stars</div>
   <div>${repo.pullRequestCount} contributions</div>
   <div class="topics">${repo.topics
-    .map(t => `<div class="topic">${t}</div>`)
+    .map((t) => `<div class="topic">${t}</div>`)
     .slice(0, 5)
     .join('')}</div>
-</div>`
+</div>`,
     )
     .join('')}
 </div>
-`)
+`);
 
-  res.write(`</body></html>`)
-  res.end()
-})
+  res.write(`</body></html>`);
+  res.end();
+});
 
-const server = http.createServer(app)
-const port = process.env.PORT || 3000
-server.listen(port, function() {
-  console.log('Express server running on *:' + port)
-})
+const server = http.createServer(app);
+const port = process.env.PORT || 3000;
+server.listen(port, function () {
+  console.log('Express server running on *:' + port);
+});
