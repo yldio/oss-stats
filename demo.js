@@ -1,7 +1,9 @@
 const express = require('express');
 const http = require('http');
 
-const { getData, normalise, summariseContributions } = require('./');
+const {
+  pullRequests: { getData, normalise, summariseContributions },
+} = require('./');
 
 const app = express();
 
