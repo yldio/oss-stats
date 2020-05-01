@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.1
+
+- GitHub contributions request timeout
+
 ## v2.0.0
 
 - Add a way to get stats about various types of contributions, not just PRs.
