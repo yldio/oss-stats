@@ -94,6 +94,7 @@ async function iterateContributionsCollection(
         headers: {
           authorization: `Bearer ${token}`,
         },
+        timeout: 10000,
       }));
     } catch (error) {
       throw new Error(`
