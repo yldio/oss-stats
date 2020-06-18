@@ -3,12 +3,34 @@ const http = require('http');
 
 const {
   pullRequests: { getData, normalise, summariseContributions },
+  contributions: { getContributionStats },
+  org: { getOrgMembers }
 } = require('./');
+
+const membersLog = require('./__mocks__/membersLog');
 
 const app = express();
 
 const org = 'yldio';
-const summaryPromise = getData({ org, token: process.env.GITHUB_TOKEN })
+
+// const contributionsPromise = async () => {
+//   const members = await getOrgMembers(membersLog);
+
+//   const contributions = await getContributionStats({
+//     org,
+//     token: process.env.GITHUB_TOKEN,
+//     members,
+//   });
+
+//   console.log('contributions: ', contributions);
+
+//   return contributions;
+// }
+
+// return contributionsPromise();
+
+const summaryPromise = getOrgMembers(membersLog)
+  .then(members => getData({ org, token: process.env.GITHUB_TOKEN, members }))
   .then(normalise)
   .then(summariseContributions)
   .catch(console.log);
@@ -73,7 +95,7 @@ app.get('/', async (req, res) => {
   const summary = await summaryPromise;
 
   res.write(
-    `<div class="big"><b>${org}</b> has made<br /><b>${summary.pullRequestCount}</b> contributions<br /> to <b>${summary.repoCount}</b> open source projects.</div>`,
+    `<div class="big"><b>${org}</b> has made<br /><b>${summary.contributionsCount}</b> contributions<br /> to <b>${summary.repoCount}</b> open source projects.</div>`,
   );
 
   res.write(`<div class="big">Top projects:</div>`);

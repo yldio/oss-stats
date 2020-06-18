@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node demo.js",
+    "test": "jest",
     "format": "prettier --write \"*.js\""
   },
   "keywords": [],
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "express": "^4.17.1",
+    "jest": "^26.0.1",
     "prettier": "^2.0.0"
   },
   "repository": {
