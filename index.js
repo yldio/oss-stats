@@ -1,4 +1,5 @@
 module.exports = {
-  pullRequests: require('./pull-requests'),
-  contributions: require('./contributions'),
+  pullRequests: require('./lib/pull-requests'),
+  contributions: require('./lib/contributions'),
+  org: require('./lib/org')
 };
