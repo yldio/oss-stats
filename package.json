@@ -1,6 +1,6 @@
 {
   "name": "@yldio/oss-stats",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Open Source Contributions of your GitHub org",
   "main": "index.js",
   "scripts": {
