@@ -23,6 +23,7 @@ async function paginateConnection(
       ...get(currentPage, pathToNodes),
     ]);
   }
+
   if (get(currentPage, pathToConnection).pageInfo.hasNextPage) {
     return paginateConnection(
       client,
@@ -31,8 +32,9 @@ async function paginateConnection(
       pathToConnection,
       currentPage,
     );
-  } else {
-    return currentPage;
   }
+
+  return currentPage;
 }
+
 module.exports = paginateConnection;

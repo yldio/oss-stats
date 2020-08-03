@@ -20,23 +20,27 @@ const getUserData = async (login) => {
 
   const query = userQuery;
   const variables = {
-    login
+    login,
   };
 
+  let data;
+
   await pRetry(async () => {
+    let errors;
+
     try {
       // We don't use github-graphql-api because its error messages are useless
-      ({
-        body: { data },
-        errors,
-      } = await got.post('https://api.github.com/graphql', {
+      const res = await got.post('https://api.github.com/graphql', {
         json: { query, variables },
         responseType: 'json',
         headers: {
           authorization: `Bearer ${token}`,
         },
         timeout: 10000,
-      }));
+      });
+
+      data = res.body.data;
+      errors = res.errors;
     } catch (error) {
       throw new Error(`
         Failed to retrieve contributions collection.
@@ -48,6 +52,7 @@ const getUserData = async (login) => {
         ${error}
       `);
     }
+
     if (errors) {
       throw new pRetry.AbortError(
         'GraphQL errors: ' + JSON.stringify(errors, null, 2),
@@ -56,6 +61,6 @@ const getUserData = async (login) => {
   }, 16);
 
   return data;
-}
+};
 
 module.exports = getUserData;

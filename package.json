@@ -1,16 +1,14 @@
 {
   "name": "@yldio/oss-stats",
   "version": "3.0.0",
-  "description": "Open Source Contributions of your GitHub org",
-  "main": "index.js",
-  "scripts": {
-    "start": "node demo.js",
-    "test": "jest",
-    "format": "prettier --write \"*.js\""
-  },
-  "keywords": [],
-  "author": "YLD Open Source (opensource-maintainers@yld.io)",
   "license": "Apache-2.0",
+  "description": "Open Source Contributions of your GitHub org",
+  "repository": "git@github.com:yldio/oss-stats.git",
+  "scripts": {
+    "fmt": "prettier --config package.json --write '**/*'",
+    "eslint": "eslint . --ext .js --ext .ts",
+    "test": "jest"
+  },
   "dependencies": {
     "date-fns": "^2.15.0",
     "github-graphql-api": "^1.0.6",
@@ -19,17 +17,83 @@
     "p-retry": "^4.2.0"
   },
   "devDependencies": {
+    "babel-eslint": "^10.1.0",
     "eslint": "^7.6.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-xo-space": "^0.25.0",
+    "eslint-plugin-jest": "^23.20.0",
     "express": "^4.17.1",
+    "husky": "^4.2.5",
     "jest": "^26.2.2",
-    "prettier": "^2.0.5"
+    "lint-staged": "^10.2.11",
+    "node-gyp": "^7.0.0",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.7"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yldio/oss-stats.git"
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
-  "bugs": {
-    "url": "https://github.com/yldio/oss-stats/issues"
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --config package.json --write",
+      "git add"
+    ],
+    "*.*": [
+      "prettier --config package.json --write",
+      "git add"
+    ]
   },
-  "homepage": "https://github.com/yldio/oss-stats#readme"
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "xo-space/esnext",
+      "prettier"
+    ],
+    "rules": {
+      "capitalized-comments": 0
+    },
+    "overrides": [
+      {
+        "files": [
+          "**/*.test.js"
+        ],
+        "env": {
+          "jest/globals": true
+        },
+        "extends": [
+          "plugin:jest/recommended"
+        ],
+        "plugins": [
+          "jest"
+        ],
+        "rules": {
+          "jest/no-mocks-import": 1
+        }
+      }
+    ]
+  },
+  "prettier": {
+    "bracketSpacing": true,
+    "jsxBracketSameLine": false,
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "all",
+    "useTabs": false,
+    "overrides": [
+      {
+        "files": [
+          ".eslintrc",
+          ".watchmanconfig"
+        ],
+        "options": {
+          "parser": "json"
+        }
+      }
+    ]
+  }
 }

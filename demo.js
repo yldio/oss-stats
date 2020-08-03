@@ -3,8 +3,7 @@ const http = require('http');
 
 const {
   pullRequests: { getData, normalise, summariseContributions },
-  contributions: { getContributionStats },
-  org: { getOrgMembers }
+  org: { getOrgMembers },
 } = require('./');
 
 const membersLog = require('./__mocks__/membersLog');
@@ -30,7 +29,7 @@ const org = 'yldio';
 // return contributionsPromise();
 
 const summaryPromise = getOrgMembers(membersLog)
-  .then(members => getData({ org, token: process.env.GITHUB_TOKEN, members }))
+  .then((members) => getData({ org, token: process.env.GITHUB_TOKEN, members }))
   .then(normalise)
   .then(summariseContributions)
   .catch(console.log);

@@ -1,7 +1,7 @@
 const addToContributionsByRepository = (
   contributionsByRepository,
   otherContributionsByRepository,
-  member
+  member,
 ) => {
   otherContributionsByRepository.forEach((otherRepositoryEntry) => {
     const repositoryEntry = contributionsByRepository.find(
@@ -14,16 +14,19 @@ const addToContributionsByRepository = (
 
       if (member) {
         repositoryEntry.contributions.contributors = {
-          ...(repositoryEntry.contributions.contributors ? repositoryEntry.contributions.contributors : {}),
-          [member]: otherRepositoryEntry.contributions.totalCount
-        }
+          ...(repositoryEntry.contributions.contributors
+            ? repositoryEntry.contributions.contributors
+            : {}),
+          [member]: otherRepositoryEntry.contributions.totalCount,
+        };
       }
     } else {
       if (member) {
         otherRepositoryEntry.contributions.contributors = {
-          [member]: otherRepositoryEntry.contributions.totalCount
-        }
+          [member]: otherRepositoryEntry.contributions.totalCount,
+        };
       }
+
       contributionsByRepository.push(otherRepositoryEntry);
     }
   });
