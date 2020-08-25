@@ -13,22 +13,22 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: '14.x'
-      - name: Setup Cache
-        uses: actions/cache@v1
-        with:
-          path: .yarn
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
-      - name: Install dependencies
-        run: yarn install --immutable
-        env:
-          YARN_CHECKSUM_BEHAVIOR: update
-          YARN_NPM_AUTH_TOKEN: ${{ secrets.YARN_NPM_AUTH_TOKEN }}
+    - uses: technote-space/auto-cancel-redundant-job@v1
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '14.x'
+    - name: Setup Cache
+      uses: actions/cache@v1
+      with:
+        path: .yarn
+        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+    - name: Install dependencies
+      run: yarn install --immutable
+      env:
+        YARN_CHECKSUM_BEHAVIOR: update
 
   ###############################################################################
   # COMMITLINT                                                                  #
@@ -37,14 +37,14 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Commit Lint
-        uses: wagoid/commitlint-github-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Commit Lint
+      uses: wagoid/commitlint-github-action@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   ###############################################################################
   # ESLINT                                                                      #
@@ -53,23 +53,21 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: '14.x'
-      - name: Setup Cache
-        uses: actions/cache@v1
-        with:
-          path: .yarn
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
-      - name: Install dependencies
-        run: yarn install --immutable
-        env:
-          YARN_CHECKSUM_BEHAVIOR: update
-      - name: ESLint
-        run: yarn run eslint
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '13.x'
+    - name: Setup Cache
+      uses: actions/cache@v1
+      with:
+        path: .yarn
+        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+    - name: Install dependencies
+      run: yarn install --immutable --immutable-cache
+    - name: ESLint
+      run: yarn run eslint
 
   ###############################################################################
   # RELEASE                                                                     #
@@ -78,22 +76,21 @@ jobs:
     needs: [eslint, commitlint]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Generate release token
-        id: release_token
-        uses: tibdex/github-app-token@v1
-        with:
-          app_id: ${{ secrets.RELEASE_APP_ID }}
-          private_key: ${{ secrets.RELEASE_PRIVATE_KEY }}
-      - name: Get branch
-        uses: rlespinasse/github-slug-action@1.1.0
-      - name: Release
-        uses: ridedott/release-me-action@v3.1.12
-        if: ${{ env.GITHUB_REF_SLUG == 'master' }}
-        with:
-          node-module: true
-        env:
-          GITHUB_TOKEN: ${{ steps.release_token.outputs.token }}
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Generate release token
+      id: release_token
+      uses: tibdex/github-app-token@v1
+      with:
+        app_id: ${{ secrets.RELEASE_APP_ID }}
+        private_key: ${{ secrets.RELEASE_PRIVATE_KEY }}
+    - name: Get branch
+      uses: rlespinasse/github-slug-action@1.1.0
+    - name: Release
+      uses: ridedott/release-me-action@master
+      if: ${{ env.GITHUB_REF_SLUG == 'master' }}
+      with:
+        node-module: true
+      env:
+        GITHUB_TOKEN: ${{ steps.release_token.outputs.token }}
+
