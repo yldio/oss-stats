@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "date-fns": "^2.15.0",
+    "date-fns": "^2.16.0",
     "github-graphql-api": "^1.0.6",
     "got": "^11.5.2",
     "lodash": "^4.17.20",
