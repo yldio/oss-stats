@@ -837,7 +837,7 @@ __metadata:
   resolution: "@yldio/oss-stats@workspace:."
   dependencies:
     babel-eslint: ^10.1.0
-    date-fns: ^2.15.0
+    date-fns: ^2.16.0
     eslint: ^7.7.0
     eslint-config-prettier: ^6.11.0
     eslint-config-xo-space: ^0.25.0
@@ -1785,10 +1785,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^2.15.0":
-  version: 2.15.0
-  resolution: "date-fns@npm:2.15.0"
-  checksum: 3/045c172823f361aa466338a2d2670629b2639ad33da22d5f4012d97e2726e92d8fc617a0d6c815a11086a0e6d2226192c2191c4d5c0d898c5a978794f21007cb
+"date-fns@npm:^2.16.0":
+  version: 2.16.0
+  resolution: "date-fns@npm:2.16.0"
+  checksum: 3/af66825d50b5d459366edf215fa521a899d421164342490a5f1fbe6b956c022ffc7b4eab42227dbf0f150f450b7f58db2f42010e554703be2edca72fe84be165
   languageName: node
   linkType: hard
 
