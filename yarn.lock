@@ -580,10 +580,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sindresorhus/is@npm:^3.0.0":
-  version: 3.1.0
-  resolution: "@sindresorhus/is@npm:3.1.0"
-  checksum: 3/36aa125d2481c3fe9a0c2c02f352c31c933cd89b87bf7fa5abc5b4adbc80a47ae67009dd39c637ea4e155b9e61a752cf13b5b73cb1eb96005dbbabaad4002f19
+"@sindresorhus/is@npm:^3.1.1":
+  version: 3.1.2
+  resolution: "@sindresorhus/is@npm:3.1.2"
+  checksum: 3/da0047761ed8f7803955bedefe75324f3601b950b98c38f6e5e409ed3ce4c07035ed2733cce9b48377d9fc8cfbaa5b2aa8bac0505188a7c5b65a06c47057a610
   languageName: node
   linkType: hard
 
@@ -844,7 +844,7 @@ __metadata:
     eslint-plugin-jest: ^23.20.0
     express: ^4.17.1
     github-graphql-api: ^1.0.6
-    got: ^11.5.2
+    got: ^11.6.0
     husky: ^4.2.5
     jest: ^26.4.2
     lint-staged: ^10.2.13
@@ -2768,22 +2768,22 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"got@npm:^11.5.2":
-  version: 11.5.2
-  resolution: "got@npm:11.5.2"
+"got@npm:^11.6.0":
+  version: 11.6.0
+  resolution: "got@npm:11.6.0"
   dependencies:
-    "@sindresorhus/is": ^3.0.0
+    "@sindresorhus/is": ^3.1.1
     "@szmarczak/http-timer": ^4.0.5
     "@types/cacheable-request": ^6.0.1
     "@types/responselike": ^1.0.0
     cacheable-lookup: ^5.0.3
     cacheable-request: ^7.0.1
     decompress-response: ^6.0.0
-    http2-wrapper: ^1.0.0-beta.5.0
+    http2-wrapper: ^1.0.0-beta.5.2
     lowercase-keys: ^2.0.0
     p-cancelable: ^2.0.0
     responselike: ^2.0.0
-  checksum: 3/9cfd13e7c72f55a8ca8c57308919e7bd1d5a665a5fb6725119fbff9f4020dc5d4315ad032896e96bd115e3d3ecfa167cb165f4c336629670a2c11b2f361bcc5f
+  checksum: 3/85c79e7fc0cd36c212d4151bc1a9e2e8b575fb798706ccd2af702b7574049ca9df7a3aca62bb061e5c44de44650c4d949c5af51a6b0b0a8d25815b33fa919963
   languageName: node
   linkType: hard
 
@@ -2945,7 +2945,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"http2-wrapper@npm:^1.0.0-beta.5.0":
+"http2-wrapper@npm:^1.0.0-beta.5.2":
   version: 1.0.0-beta.5.2
   resolution: "http2-wrapper@npm:1.0.0-beta.5.2"
   dependencies:
