@@ -21,7 +21,7 @@ jobs:
       with:
         node-version: '14.x'
     - name: Setup Cache
-      uses: actions/cache@v2.1.1
+      uses: actions/cache@v2.1.3
       with:
         path: .yarn
         key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
@@ -60,7 +60,7 @@ jobs:
       with:
         node-version: '13.x'
     - name: Setup Cache
-      uses: actions/cache@v2.1.1
+      uses: actions/cache@v2.1.3
       with:
         path: .yarn
         key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
